@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import * as redisStore from 'cache-manager-ioredis';
+import { HabitsModule } from './habits/habits.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import * as redisStore from 'cache-manager-ioredis';
     }),
     AuthModule,
     UserModule,
+    HabitsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
