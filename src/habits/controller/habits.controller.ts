@@ -9,9 +9,9 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { HabitsService } from './habits.service';
-import { CreateHabitDto } from './dto/create-habit.dto';
-import { UpdateHabitDto } from './dto/update-habit.dto';
+import { HabitsService } from '../service/habits.service';
+import { CreateHabitDto } from '../dto/createHabit.dto';
+import { UpdateHabitDto } from '../dto/updateHabit.dto';
 
 @Controller('habits')
 export class HabitsController {

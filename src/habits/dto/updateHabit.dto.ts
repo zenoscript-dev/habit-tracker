@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateHabitDto } from './create-habit.dto';
+import { CreateHabitDto } from './createHabit.dto';
 
 export class UpdateHabitDto extends PartialType(CreateHabitDto) {}

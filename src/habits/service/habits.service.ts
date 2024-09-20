@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { CreateHabitDto } from './dto/create-habit.dto';
-import { UpdateHabitDto } from './dto/update-habit.dto';
+import { CreateHabitDto } from '../dto/createHabit.dto';
+import { UpdateHabitDto } from '../dto/updateHabit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Habit } from './models/habit.model';
+import { Habit } from '../models/habit.model';
 import { Repository } from 'typeorm';
 
 @Injectable()
