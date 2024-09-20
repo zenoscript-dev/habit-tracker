@@ -7,9 +7,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './user/user.module';
 import * as redisStore from 'cache-manager-ioredis';
-import { RoleModule } from './auth/rbac/role/module/role.module';
-import { PermissionModule } from './auth/rbac/permission/permission.module';
-import { RolePermissionModule } from './auth/rbac/role-permission/role-permission.module';
 
 @Module({
   imports: [
@@ -32,9 +29,6 @@ import { RolePermissionModule } from './auth/rbac/role-permission/role-permissio
     }),
     AuthModule,
     UserModule,
-    RoleModule,
-    PermissionModule,
-    RolePermissionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

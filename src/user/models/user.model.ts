@@ -1,62 +1,50 @@
-import { Base } from 'src/core/models/base.model';
 import {
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
   Entity,
-  Index,
+  Column,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Index,
 } from 'typeorm';
-import { UserStatus } from '../enums/userStatus.enum';
-import { UUID } from 'crypto';
-import { Roles } from 'src/auth/rbac/role/model/role.model';
+import { v4 as uuidv4 } from 'uuid';
 
-@Entity('users')
-@Index('IDX_UNIQUE_LOGIN_ID', ['loginId'], { unique: true })
-export class User extends Base {
+export enum UserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  BANNED = 'banned',
+}
+
+@Entity({ name: 'users' })
+@Index(['id']) // Creating an index for (id, name)
+export class User {
   @PrimaryGeneratedColumn('uuid')
-  @Index('IDX_UNIQUE_USER_ID')
-  id: UUID;
+  id: string = uuidv4(); // UUID as primary key
 
-  @Column({ unique: true, nullable: false })
-  loginId: string;
-  @Column({ unique: true, nullable: false })
-  userName: string;
+  @Column({ unique: true })
+  username: string;
 
-  @Column({ select: true, nullable: false })
+  @Column({ nullable: true })
+  email: string;
+
+  @Column()
   password: string;
 
-  @Column({ nullable: false })
-  userId: string;
+  @Column({ nullable: true })
+  icon: string;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  created_at: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updated_at: Date;
 
   @Column({
     type: 'enum',
     enum: UserStatus,
     default: UserStatus.ACTIVE,
-    nullable: false,
   })
   status: UserStatus;
 
-  // @Column({ nullable: true })
-  // profilepic: string;
-
   @Column({ nullable: true })
-  lastLoggedIn: Date;
-
-  // @ManyToMany(() => Roles, { cascade: true })
-  // @JoinTable({
-  //   name: 'user_roles', // the name of the join table
-  //   joinColumn: { name: 'userId', referencedColumnName: 'id' },
-  //   inverseJoinColumn: { name: 'roleId', referencedColumnName: 'id' },
-  // })
-  roles: Roles[];
-
-  @BeforeInsert()
-  @BeforeUpdate()
-  toLowerCaseloginId() {
-    if (this.loginId) {
-      this.loginId = this.loginId.toLowerCase();
-      this.loginId = this.loginId.trim();
-    }
-  }
+  points: string;
 }

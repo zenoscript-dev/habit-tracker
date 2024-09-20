@@ -43,12 +43,11 @@ export class UserService {
 
   async createUser(
     createUserDto: CreateUserDto,
-    profilePic?: any,
   ): Promise<Object> {
     this.logger.log('Calling create user api.................>');
     try {
       // Validate email
-      if (!Util.checkEmailValidation(createUserDto.loginId)) {
+      if (!Util.checkEmailValidation(createUserDto.email)) {
         throw new HttpException('Invalid email', HttpStatus.BAD_REQUEST);
       }
 
@@ -70,10 +69,24 @@ export class UserService {
         }
       }
 
-      // Check if user already exists.
-      const userExists = await this.isUserExists(createUserDto.loginId);
-      if (userExists) {
-        this.logger.log('user already exists ---------------------->');
+      // Check if user already exists with email.
+      const userExistsWithEmail = await this.isUserExistsByEmail(
+        createUserDto.email,
+      );
+      if (userExistsWithEmail) {
+        this.logger.log(
+          `user already exists with this email ${createUserDto.email}---------------------->`,
+        );
+
+        throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+      }
+      const userExistsWithUserName = await this.isUserExistsByUserName(
+        createUserDto.username,
+      );
+      if (userExistsWithUserName) {
+        this.logger.log(
+          `user already exists with this username ${createUserDto.username}---------------------->`,
+        );
         throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
       }
 
@@ -87,24 +100,9 @@ export class UserService {
       const newUser = this.userRepo.create({
         ...createUserDto,
         password: hashedPassword,
+        email: createUserDto.email.toLocaleLowerCase(),
       });
-
-      // Save user before uploading profile picture to get the user ID
       await this.userRepo.save(newUser);
-
-      // Handle profile picture upload if provided
-      // if (profilePic) {
-      //   const uploadedImageDetails = await this.uploadProfilePicture({
-      //     profilePic,
-      //   }, newUser.id);
-
-      //   // Update the user with the profile picture URL or path after uploading
-      //   if (uploadedImageDetails) {
-      //     newUser.profilepic = uploadedImageDetails; // Assuming the returned object has a 'url' property
-      //     await this.userRepo.save(newUser);
-      //   }
-      // }
-
       this.logger.log('User created successfully------------------------>');
 
       return new SuccessResponse<User>(
@@ -121,10 +119,13 @@ export class UserService {
     this.logger.log('Calling user login api.................>');
 
     try {
-      // Check if user exists with the employee id
-      const userDetails = await this.userRepo.findOne({
-        where: { loginId: userLoginDto.loginId },
-      });
+      // Check if user exists with the emailId
+      const userDetails = await this.userRepo
+        .createQueryBuilder('q')
+        .where('q.username = :identifier OR q.email = :identifier', {
+          identifier: userLoginDto.loginId,
+        })
+        .getOne();
 
       if (!userDetails) {
         throw new HttpException(
@@ -162,10 +163,10 @@ export class UserService {
     }
   }
 
-  async isUserExists(loginId: string): Promise<boolean> {
+  async isUserExistsByEmail(loginId: string): Promise<boolean> {
     try {
       const userExists = await this.userRepo.findOne({
-        where: { loginId: loginId },
+        where: { email: loginId },
       });
       return !!userExists;
     } catch (error) {
@@ -175,12 +176,21 @@ export class UserService {
       );
     }
   }
+  async isUserExistsByUserName(userName: string): Promise<boolean> {
+    try {
+      const userExists = await this.userRepo.findOne({
+        where: { username: userName },
+      });
+      return !!userExists;
+    } catch (error) {
+      throw new HttpException(
+        `Error finding user with login ID ${userName}: ${error}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
-  async findUserByLoginId(
-    namespace: string,
-    loginId?: string,
-    employeeId?: string,
-  ): Promise<User> {
+  async findUserByLoginId(loginId?: string, username?: string): Promise<User> {
     try {
       this.logger.log(
         'Calling find users by email or employee id................................................................',
@@ -194,11 +204,11 @@ export class UserService {
           })
           .getOne();
         return user;
-      } else if (employeeId) {
+      } else if (username) {
         const user = await this.userRepo
           .createQueryBuilder('user')
           .where('LOWER(user.employeeId) =:employeeId', {
-            employeeId: employeeId.toLowerCase(),
+            employeeId: username.toLowerCase(),
           })
           .getOne();
         return user;
@@ -230,18 +240,4 @@ export class UserService {
       );
     }
   }
-
-  // async uploadProfilePicture(fileDetails: any, userId: string) {
-  //   try {
-  //     const response = await this.minioClient.send("image-upload", {
-  //       file: fileDetails.profilePic,
-  //       userId: userId,
-  //     }).toPromise();
-
-  //     return response.image_url;
-  //   } catch (error) {
-  //     console.error("Error uploading profile picture: ", error);
-  //     throw new HttpException('Error uploading profile picture', HttpStatus.INTERNAL_SERVER_ERROR);
-  //   }
-  // }
 }

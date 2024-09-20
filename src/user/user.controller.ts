@@ -32,7 +32,7 @@ export class UserController {
     try {
       if (profilePic) {
         if (profilePic) {
-          return await this.userService.createUser(createUserDto, profilePic);
+          return await this.userService.createUser(createUserDto);
         } else {
           return await this.userService.createUser(createUserDto);
         }
